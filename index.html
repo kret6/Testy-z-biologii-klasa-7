@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sprawdzian: Układ Pokarmowy (Kl. 7) - Poprawiony</title>
+<title>Biologia: Układ Pokarmowy (Losowy)</title>
 <style>
     body { font-family: 'Verdana', sans-serif; background-color: #f0f8ff; padding: 10px; text-align: center; }
     #quiz-container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -17,7 +17,6 @@
     .wrong { color: red; }
     #score { font-size: 1.5em; color: #2e8b57; margin-top: 20px; }
     #progress { font-size: 0.9em; color: #666; margin-bottom: 10px; }
-    /* Styl dla obrazka */
     #diagram-container { text-align: center; margin-bottom: 15px; display: none; }
     #question-image { max-width: 100%; height: auto; border-radius: 10px; border: 2px solid #ddd; }
 </style>
@@ -26,30 +25,31 @@
 
 <div id="quiz-container">
     <h1>🌱 Układ Pokarmowy</h1>
-    <div id="progress">Pytanie 1 z 11</div>
+    <div id="progress">Ładowanie...</div>
     
     <div id="diagram-container">
         <img id="question-image" src="" alt="Schemat">
     </div>
     
-    <div id="question-text" class="question">Ładowanie pytania...</div>
-    
+    <div id="question-text" class="question"></div>
     <div id="answers"></div>
-
     <div id="feedback" class="feedback"></div>
     <button id="next-btn" class="btn" style="background-color: #2196F3; display:none; margin-top:20px;" onclick="nextQuestion()">Następne pytanie ➡️</button>
 </div>
 
 <script>
-    // Link do obrazka z Wikipedii (polski schemat)
-    const onlineImage = "ukl-pok.jpg";
+    // Link do obrazka (działa online)
+    const onlineImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Digestive_system_diagram_pl.svg/522px-Digestive_system_diagram_pl.svg.png";
 
-    const questions = [
+    // BAZA PYTAŃ
+    // UWAGA: W tej wersji "correct: 0" oznacza, że PIERWSZA odpowiedź na liście (w kodzie) jest poprawna.
+    // Skrypt sam je potem pomiesza na ekranie, więc tu wpisuj poprawną zawsze jako pierwszą!
+    const rawQuestions = [
         {
             q: "Spójrz na schemat. Który narząd produkuje żółć?",
-            img: true, // To pytanie ma obrazek
+            img: true,
             a: ["Wątroba", "Trzustka", "Żołądek", "Jelito grube"],
-            correct: 0
+            correct: 0 
         },
         {
             q: "Gdzie rozpoczyna się trawienie cukrów?",
@@ -72,7 +72,7 @@
         {
             q: "Prawda czy Fałsz: Tłuszcze są trawione głównie w jamie ustnej.",
             img: false,
-            a: ["FAŁSZ", "PRAWDA"],
+            a: ["FAŁSZ", "PRAWDA"], // Tu FAŁSZ jest poprawne (indeks 0)
             correct: 0
         },
         {
@@ -113,8 +113,28 @@
         }
     ];
 
+    let questions = [];
     let currentQuestion = 0;
     let score = 0;
+
+    // Funkcja mieszająca (algorytm Fisher-Yates)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Przygotowanie quizu (mieszanie pytań)
+    function initQuiz() {
+        // Kopiujemy pytania, żeby nie psuć oryginału
+        questions = JSON.parse(JSON.stringify(rawQuestions));
+        shuffleArray(questions); // Mieszamy kolejność pytań
+        currentQuestion = 0;
+        score = 0;
+        loadQuestion();
+    }
 
     function loadQuestion() {
         const q = questions[currentQuestion];
@@ -139,34 +159,47 @@
         const answersDiv = document.getElementById('answers');
         answersDiv.innerHTML = "";
 
-        // Mieszanie odpowiedzi (opcjonalne, tutaj wyłączone dla prostoty, kolejność stała)
-        q.a.forEach((answer, index) => {
+        // PRZYGOTOWANIE ODPOWIEDZI (MIESZANIE)
+        // Tworzymy obiekty, które pamiętają, czy odpowiedź jest poprawna
+        let answers = q.a.map((text, index) => {
+            return { text: text, isCorrect: (index === q.correct) };
+        });
+        
+        // Mieszamy odpowiedzi
+        shuffleArray(answers);
+
+        // Generujemy przyciski
+        answers.forEach((ans) => {
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.textContent = answer;
-            // Dodajemy obsługę dotyku dla pewności
-            btn.onclick = () => checkAnswer(index, btn);
+            btn.textContent = ans.text;
+            btn.onclick = () => checkAnswer(ans.isCorrect, btn, answers);
             answersDiv.appendChild(btn);
         });
     }
 
-    function checkAnswer(selectedIndex, btnElement) {
-        const q = questions[currentQuestion];
+    function checkAnswer(isCorrect, btnElement, allAnswers) {
         const buttons = document.querySelectorAll('#answers .btn');
-        
-        buttons.forEach(btn => btn.disabled = true);
+        buttons.forEach(btn => btn.disabled = true); // Blokujemy wszystkie
 
-        if (selectedIndex === q.correct) {
-            btnElement.style.backgroundColor = "#2e8b57"; // Ciemniejszy zielony
+        if (isCorrect) {
+            btnElement.style.backgroundColor = "#2e8b57";
             document.getElementById('feedback').textContent = "Brawo! 🎉";
             document.getElementById('feedback').className = "feedback correct";
             score++;
         } else {
-            btnElement.style.backgroundColor = "#d32f2f"; // Ciemniejszy czerwony
-            // Pokaż poprawną
-            buttons[q.correct].style.backgroundColor = "#2e8b57";
+            btnElement.style.backgroundColor = "#d32f2f";
             document.getElementById('feedback').textContent = "Niestety, pomyłka.";
             document.getElementById('feedback').className = "feedback wrong";
+            
+            // Podświetl poprawną odpowiedź (musimy ją znaleźć w pomieszanych przyciskach)
+            // Szukamy przycisku, który ma tekst poprawnej odpowiedzi
+            const correctAnsObj = allAnswers.find(a => a.isCorrect);
+            buttons.forEach(b => {
+                if (b.textContent === correctAnsObj.text) {
+                    b.style.backgroundColor = "#2e8b57";
+                }
+            });
         }
         document.getElementById('next-btn').style.display = "block";
     }
@@ -181,7 +214,6 @@
     }
 
     function showResult() {
-        // Ukryj obrazek na ekranie wyników
         document.getElementById('diagram-container').style.display = "none";
         
         let message = "";
@@ -197,8 +229,8 @@
         `;
     }
 
-    // Uruchomienie
-    loadQuestion();
+    // Start
+    initQuiz();
 </script>
 
 </body>
