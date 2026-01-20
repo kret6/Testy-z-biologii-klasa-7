@@ -39,7 +39,7 @@
 
 <script>
     // Link do obrazka (działa online)
-    const onlineImage = "ukl-pok.jpg";
+    const onlineImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Digestive_system_diagram_pl.svg/522px-Digestive_system_diagram_pl.svg.png";
 
     // BAZA PYTAŃ
     // UWAGA: W tej wersji "correct: 0" oznacza, że PIERWSZA odpowiedź na liście (w kodzie) jest poprawna.
@@ -128,14 +128,20 @@
 
     // Przygotowanie quizu (mieszanie pytań)
     function initQuiz() {
-        // Kopiujemy pytania, żeby nie psuć oryginału
-        questions = JSON.parse(JSON.stringify(rawQuestions));
-        shuffleArray(questions); // Mieszamy kolejność pytań
-        currentQuestion = 0;
-        score = 0;
-        loadQuestion();
-    }
-
+    // 1. Kopiujemy wszystkie pytania
+    let allQuestions = JSON.parse(JSON.stringify(rawQuestions));
+    
+    // 2. Mieszamy je wszystkie
+    shuffleArray(allQuestions);
+    
+    // 3. Bierzemy tylko pierwsze 10 sztuk (wycinamy kawałek tortu)
+    questions = allQuestions.slice(0, 10); 
+    
+    // Reszta bez zmian. .length teraz wyniesie 10, a nie 50.
+    currentQuestion = 0;
+    score = 0;
+    loadQuestion();
+}
     function loadQuestion() {
         const q = questions[currentQuestion];
         
@@ -235,4 +241,3 @@
 
 </body>
 </html>
-
