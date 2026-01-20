@@ -11,7 +11,7 @@ Projekt stworzony z myślą o Julii. Interfejs został zaprojektowany tak, aby b
 
 ## 🚀 Jak uruchomić?
 Wystarczy wejść na ten link:
-
+https://kret6.github.io/Testy-z-biologii-klasa-7/
 
 ## 🛠 Jak edytować pytania?
 1. Otwórz plik `index.html`.
